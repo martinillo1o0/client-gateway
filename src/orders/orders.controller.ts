@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Inject, Query } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto.js';
 import { ORDER_SERVICE } from '../config/service.js';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { OrderPaginationDto } from './dto/order-pagination.js';
 import { catchError } from 'rxjs';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 
 
 @Controller('orders')
@@ -30,5 +31,19 @@ export class OrdersController {
         throw new RpcException(err);
       }),
     );
+  }
+
+  @Patch(':id')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    return this.ordersClient
+      .send('changeOrderStatus', { id, status: updateOrderStatusDto.status })
+      .pipe(
+        catchError((err) => {
+          throw new RpcException(err);
+        }),
+      );
   }
 }
